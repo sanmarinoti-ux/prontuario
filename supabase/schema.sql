@@ -38,9 +38,7 @@ alter table public.employee_notes enable row level security;
 drop policy if exists "profiles_read_self" on public.profiles;
 drop policy if exists "rh_read_profiles" on public.profiles;
 create policy "rh_read_profiles" on public.profiles
- for select to authenticated using (
-   exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'rh')
-);
+ for select to authenticated using (true);
 
 -- Remove as políticas amplas da primeira versão, se existirem.
 drop policy if exists "authenticated read employees" on public.employees;
