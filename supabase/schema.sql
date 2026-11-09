@@ -4,8 +4,11 @@ create extension if not exists pgcrypto;
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   role text not null check (role in ('rh')),
+  display_name text,
   created_at timestamptz not null default now()
 );
+
+alter table public.profiles add column if not exists display_name text;
 
 create table if not exists public.employees (
  id uuid primary key default gen_random_uuid(),
@@ -33,8 +36,11 @@ alter table public.employee_notes enable row level security;
 -- Usuário só pode ler o próprio perfil. Inclusão/alteração de perfis é feita
 -- pelo administrador no SQL Editor, não pela aplicação web.
 drop policy if exists "profiles_read_self" on public.profiles;
-create policy "profiles_read_self" on public.profiles
- for select to authenticated using (id = auth.uid());
+drop policy if exists "rh_read_profiles" on public.profiles;
+create policy "rh_read_profiles" on public.profiles
+ for select to authenticated using (
+   exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'rh')
+);
 
 -- Remove as políticas amplas da primeira versão, se existirem.
 drop policy if exists "authenticated read employees" on public.employees;
@@ -79,3 +85,5 @@ create policy "rh_insert_notes" on public.employee_notes
 -- 3) Execute o comando abaixo substituindo UUID-DO-USUARIO:
 -- insert into public.profiles (id, role) values ('UUID-DO-USUARIO', 'rh');
 -- Não habilite cadastro público de usuários.
+-- Para identificar cada autor no histórico, preencha o nome de cada usuário:
+-- update public.profiles set display_name = 'Nome da pessoa' where id = 'UUID-DO-USUARIO';
