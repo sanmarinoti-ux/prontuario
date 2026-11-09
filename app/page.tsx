@@ -67,7 +67,7 @@ export default function Home() {
     event.preventDefault(); if (!supabase) return;
     setBusy(true); setError("");
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (error) setError("E-mail ou senha inválidos, ou conta não cadastrada.");
+    if (error) setError(`Falha no login: ${error.message}`);
     else { setPassword(""); await verifySession(); }
     setBusy(false);
   }
