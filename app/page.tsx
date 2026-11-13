@@ -72,8 +72,10 @@ export default function Home() {
     };
     if (!payload.full_name) return;
     setRegistrationBusy(true); setError("");
-    const table = activeSection === "pj" ? "pj_collaborators" : "interview_candidates";
-    const { error } = await supabase.from(table).insert(payload);
+    const result = activeSection === "pj"
+      ? await supabase.from("pj_collaborators").insert(payload)
+      : await supabase.from("interview_candidates").insert(payload);
+    const error = result.error;
     if (error) setError("Não foi possível salvar o cadastro. Verifique os dados e tente novamente.");
     else { setRegistrationModal(false); await loadExtraRecords(); }
     setRegistrationBusy(false);
